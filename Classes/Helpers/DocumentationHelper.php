@@ -109,7 +109,11 @@ class DocumentationHelper {
 			$folders[] = "{$path}*/*.{$options['suffix']}";
 		}
 
-		$fileList = glob('{' . join(',', $folders) . '}', GLOB_BRACE);
+		$fileList = [];
+		foreach ($folders as $folder) {
+			$files = glob($folder);			
+			$fileList = array_merge($fileList, $files);
+		}
 
 		// Durch alle php-Dateien im Verzeichnis Classes/Utilities/ gehen
 		foreach ($fileList as $path) {
@@ -239,7 +243,9 @@ class DocumentationHelper {
 		$source = self::$sourceCodeCache[$f];
 		$body = "\n";
 		for ($i=$start_line; $i<$end_line; $i++) {
-			$body.="{$source[$i]}\n";
+			if ($source[$i] ?? false) {
+				$body.="{$source[$i]}\n";
+			}
 		}
 		$body = str_replace('    ', "\t", $body);
 		$body = str_replace("\n\t", "\n", $body);
