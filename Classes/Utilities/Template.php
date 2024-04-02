@@ -71,19 +71,31 @@ class Template implements SingletonInterface {
 	}
 
 	/**
-	 * 	Ein Fluid-Templates rendern per StandAlone-Renderer
-	 *	```
-	 *	\nn\t3::Template()->render( 'Templatename', $vars, $templatePaths );
-	 *	\nn\t3::Template()->render( 'Templatename', $vars, 'myext' );
-	 *	\nn\t3::Template()->render( 'Templatename', $vars, 'tx_myext_myplugin' );
-	 *	\nn\t3::Template()->render( 'fileadmin/Fluid/Demo.html', $vars );
-	 *	```
-	 * 	@return string
+	 * Ein Fluid-Templates rendern per StandAlone-Renderer
+	 * ```
+	 * \nn\t3::Template()->render( 'Templatename', $vars, $templatePaths );
+	 * \nn\t3::Template()->render( 'Templatename', $vars, 'myext' );
+	 * \nn\t3::Template()->render( 'Templatename', $vars, 'tx_myext_myplugin' );
+	 * \nn\t3::Template()->render( 'fileadmin/Fluid/Demo.html', $vars );
+	 * ```
+	 * Seit TYPO3 12 muss beim Aufruf aus einem Controller auch der `$request` übergeben werden:
+	 * ```
+	 * \nn\t3::Template()->render( 'Templatename', $vars, $templatePaths, $this->request );
+	 * ```
+	 * @return string
 	 */
-	public function render ( $templateName = null, $vars = [], $templatePaths = [] ) {
-		
+	public function render ( $templateName = null, $vars = [], $templatePaths = [], $request = null ) 
+	{	
 		$view = \nn\t3::injectClass(StandaloneView::class);
-		
+
+		// @todo: Prüfen, of das geht?
+		if (!$request) {
+			//$request = $GLOBALS['TYPO3_REQUEST'] ?? false;
+		}
+		if ($request) {
+			$view->setRequest( $request );
+		}
+
 		if ($templatePaths) {
 			// String wurde als TemplatePath übergeben
 			if (is_string($templatePaths)) {
@@ -105,20 +117,33 @@ class Template implements SingletonInterface {
 	}
 	
 	/**
-	 * 	einfachen Fluid-Code rendern per StandAlone-Renderer
+	 * einfachen Fluid-Code rendern per StandAlone-Renderer
+	 * ```
+	 * \nn\t3::Template()->renderHtml( '{_all->f:debug()} Test: {test}', $vars );
+	 * \nn\t3::Template()->renderHtml( ['Name: {name}', 'Test: {test}'], $vars );
+	 * \nn\t3::Template()->renderHtml( ['name'=>'{firstname} {lastname}', 'test'=>'{test}'], $vars );
 	 *	```
-	 * 	\nn\t3::Template()->renderHtml( '{_all->f:debug()} Test: {test}', $vars );
-	 * 	\nn\t3::Template()->renderHtml( ['Name: {name}', 'Test: {test}'], $vars );
-	 * 	\nn\t3::Template()->renderHtml( ['name'=>'{firstname} {lastname}', 'test'=>'{test}'], $vars );
-	 *	```
-	 * 	@return string
+	 * Seit TYPO3 12 muss beim Aufruf aus einem Controller auch der `$request` übergeben werden:
+	 * ```
+	 * \nn\t3::Template()->renderHtml( 'Templatename', $vars, $templatePaths, $this->request );
+	 * ```
+	 * @return string
 	 */
-	public function renderHtml ( $html = null, $vars = [], $templatePaths = []) {
+	public function renderHtml ( $html = null, $vars = [], $templatePaths = [], $request = null) {
 		
 		$returnArray = is_array($html);
 		if (!$returnArray) $html = [$html];
 
 		$view = \nn\t3::injectClass(StandaloneView::class);
+
+		// @todo: Prüfen, of das geht?
+		if (!$request) {
+			//$request = $GLOBALS['TYPO3_REQUEST'] ?? false;
+		}
+		if ($request) {
+			$view->setRequest( $request);
+		}
+		
 		if ($templatePaths) {
 			$this->setTemplatePaths( $view, $templatePaths );
 			$this->removeControllerPath( $view );
