@@ -1251,4 +1251,29 @@ class Db implements SingletonInterface
 		if (!$return) echo $str;
 		return $str;
 	}
+
+	/**
+	 * 
+	 * Store an item in the database, but keep it unique by $whereArr = []
+	 * 
+	 * ```
+	 * $data = [ profileUid: "", entityType: "", entityUid: "",  ... ];
+	 * \nn\un::Interaction()->insertOrUpdate( $data );
+	 * ```
+	 * @param int $feUserId
+	 * @param array $data
+	 * @return array $model
+	 */
+	public function insertOrUpdate($tableName, $whereArr = [], $model = [])
+	{
+		// check if entityUid exists
+		$exists = $this->findOneByValues($tableName, $whereArr);
+
+		if ($exists) {
+			// remove existing entry
+			$this->delete($tableName, $whereArr, true);
+		}
+
+		return $this->insert($model);
+	}
 }
