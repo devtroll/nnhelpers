@@ -12,6 +12,7 @@ use TYPO3\CMS\Extbase\Domain\Model\FileReference as FalFileReference;
 use TYPO3\CMS\Extbase\Reflection\ReflectionService;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Extbase\Utility\TypeHandlingUtility;
+use TYPO3\CMS\Core\Resource\ResourceFactory;
 
 /**
  * Alles, was man für Objects und Models braucht.
@@ -69,7 +70,7 @@ class Obj implements SingletonInterface {
 		$model = $this->initialArgument !== null ? $this->initialArgument : $model;
 		$schema = \nn\t3::Obj()->getClassSchema($model);
 		$modelProperties = $schema->getProperties();
-		
+
 		if (!is_array($overlay)) return $model;
 		
 		foreach ($overlay as $propName=>$value) {
@@ -78,6 +79,8 @@ class Obj implements SingletonInterface {
 				
 				// Typ für Property des Models, z.B. `string`
 				$propType = $this->get( $propInfo, 'type');
+
+				$isSysFile = is_a( $propType, \TYPO3\CMS\Core\Resource\File::class, true );
 
 				if ($this->isSimpleType($propType)) {
 					
@@ -91,13 +94,53 @@ class Obj implements SingletonInterface {
 				if (!class_exists($propType)) {
 					\nn\t3::Exception( "Class of type `{$propType}` is not defined." );
 				}
-
-				// Es ist ein `Model`, `FileReference` etc.
-
-				$child = \nn\t3::newClass( $propType );
+				
 				$curPropValue = $this->get( $model, $propName );
 
-				if ($this->isFileReference($child)) {
+				if (!$isSysFile) {
+					// Es ist ein `Model`, `FileReference` etc.
+					$child = \nn\t3::newClass( $propType );
+				}
+
+
+				if ($isSysFile) {
+
+					$resourceFactory = GeneralUtility::makeInstance(ResourceFactory::class);
+					$uid = false;
+
+					// '1'
+					if (is_numeric($value)) {
+						$uid = $value;
+					}
+					// ['uid'=>1]
+					if (!$uid && is_array($value)) {
+						$uid = $value['uid'] ?? false;
+					}
+					// 'index.php?eID=dumpFile&t=f&f=255&token=...' or 'https://www.website.com/fileadmin/file.txt'
+					if (!$uid && is_string($value)) {						
+						$queryParams = [];
+						$parsedUrl = parse_url($value);
+						parse_str($parsedUrl['query'], $queryParams);
+						if (($queryParams['eID'] ?? false) == 'dumpFile' && $uid = intval($queryParams['f'] ?? 0)) {
+							$value = $resourceFactory->getFileObject($uid);
+						} else if ($parsedUrl['host'] ?? false) {
+							$value = ltrim($parsedUrl['path'], '/');
+						}
+					}
+
+					if ($uid) {
+						$value = $resourceFactory->getFileObject(intval($uid));
+					} else {
+
+						try {
+							// '/var/www/path/to/file.txt' or '1:/path/to/file.txt' or '/fileadmin/path/to/file.txt'
+							$value = $resourceFactory->getFileObjectFromCombinedIdentifier($value);
+						} catch( \Exception $e ) {
+							$value = null;
+						}
+					}
+
+				} else if ($this->isFileReference($child)) {
 
 					// -----
 					// Die Property ist eine einzelne `SysFileReference` – keine `ObjectStorage`
@@ -125,9 +168,8 @@ class Obj implements SingletonInterface {
 						}
 
 					}
-				}
 
-				else if ($this->isStorage($child)) {
+				} else if ($this->isStorage($child)) {
 
 					// -----
 					// Die Property ist eine `ObjectStorage`
@@ -140,9 +182,15 @@ class Obj implements SingletonInterface {
 						\nn\t3::Exception( "Class of type `{$childPropType}` is not defined." );
 					}
 
-					$storageItemInstance = \nn\t3::newClass( $childPropType );
-					$isFileReference = $this->isFileReference( $storageItemInstance );
+					// sys_file stored in the ObjectStorage?
+					$isSysFile = is_a($childPropType, \TYPO3\CMS\Core\Resource\File::class, true);
+					$isFileReference = false;
 
+					if (!$isSysFile) {
+						$storageItemInstance = \nn\t3::newClass( $childPropType );
+						$isFileReference = $this->isFileReference( $storageItemInstance );	
+					}
+					
 					// Array der existierende Items in der `ObjectStorage` holen. Key ist `uid` oder `publicUrl`
 					$existingStorageItemsByUid = [];
 
@@ -156,7 +204,8 @@ class Obj implements SingletonInterface {
 						}	
 					}
 					
-					$objectStorage =  \nn\t3::newClass( get_class($child) );
+					$storageClassName = get_class($child);
+					$objectStorage =  \nn\t3::newClass( $storageClassName );
 
 					// Jedes Item in die Storage einfügen. Dabei werden bereits vorhandene Items aus der alten Storage verwendet.
 					foreach ($value as $itemData) {
@@ -178,6 +227,9 @@ class Obj implements SingletonInterface {
 							
 							// ... dann das bisherige Item verwenden.
 							// $item = \nn\t3::Obj( $item )->merge( $itemData );
+						} else if ($isSysFile) {
+							
+							\nn\t3::Exception( "Converting to SysFile not supported yet." );
 
 						} else if ($isFileReference) {
 
