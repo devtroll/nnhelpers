@@ -88,6 +88,8 @@ class Flexform implements SingletonInterface {
 	 *		<typoscriptPath>plugin.tx_extname.settings.templates</typoscriptPath>
 	 *		<!-- Alternativ: Settings aus PageTSConfig laden: -->
 	 *		<pageconfigPath>tx_extname.colors</pageconfigPath>
+	 *		<!-- Optional: Eigenen Key aus TypoScript verwenden -->
+	 *		<customKey>value</customKey>
 	 *		<insertEmpty>1</insertEmpty>
 	 *		<hideKey>1</hideKey>
 	 *	</config>
@@ -161,6 +163,9 @@ class Flexform implements SingletonInterface {
 			}
 		}
 
+		// eigenen Key verwenden?
+		$customKey = $config['config']['customKey'] ?? '';
+
 		// Ausgewählte Action aus FlexForm 'switchableControllerActions' holen
 		$selectedAction = $config['row']['switchableControllerActions'] ?? false;
 
@@ -175,20 +180,20 @@ class Flexform implements SingletonInterface {
 		foreach ($setup as $k=>$v) {
 			if (is_array($v)) {
 				$label = $v['_typoScriptNodeValue'] ?? $v['label'] ?? $v['title'] ?? $v;
-				$key = $v['classes'] ?? $k;
+				$key = $v[$customKey] ?? $v['classes'] ?? $k;
 				$keyStr = $hideKey ? '' : " ({$key})";
 				$limitToAction = \nn\t3::Arrays($v['controllerAction'] ?? '')->trimExplode();
 				if ($limitToAction && $selectedAction) {
 					if (array_intersect($limitToAction, $selectedAction)) {
-						$config['items'] = array_merge( $config['items'], [['label'=>$label.$keyStr, 'value'=>$k]] );
+						$config['items'] = array_merge( $config['items'], [['label'=>$label.$keyStr, 'value'=>$key]] );
 					}
 				} else {
-					$config['items'] = array_merge( $config['items'], [['label'=>$label.$keyStr, 'value'=>$k]] );
+					$config['items'] = array_merge( $config['items'], [['label'=>$label.$keyStr, 'value'=>$key]] );
 				}
 			} else {
-				$key = $v['classes'] ?? $k;
+				$key = $v[$customKey] ?? $v['classes'] ?? $k;
 				$keyStr = $hideKey ? '' : " ({$key})";
-				$config['items'] = array_merge( $config['items'], [['label'=>$v.$keyStr, 'value'=>$k]] );
+				$config['items'] = array_merge( $config['items'], [['label'=>$v.$keyStr, 'value'=>$key]] );
 			}
 		}
 
