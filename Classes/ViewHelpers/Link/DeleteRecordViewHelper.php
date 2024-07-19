@@ -23,11 +23,12 @@ class DeleteRecordViewHelper extends AbstractViewHelper {
 		$this->registerArgument('table', 'string', 'DB Tabellen-Name', true);
 		$this->registerArgument('uid', 'string', 'UID in Tabelle', true);
 		$this->registerArgument('data', 'array', 'Data-Attribut', false, []);
+		$this->registerArgument('class', 'string', 'Class-Attribut', false, '');
    }
 
 	public static function renderStatic( array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext ) 
 	{
-		$args = ['table', 'uid', 'data'];
+		$args = ['table', 'uid', 'data', 'class'];
 		foreach ($args as $arg) {
 			$$arg = $arguments[$arg] ?? '';
 		}
@@ -48,6 +49,10 @@ class DeleteRecordViewHelper extends AbstractViewHelper {
 		$dataAttr = [];
 		foreach ($data as $k=>$v) {
 			$dataAttr["data-{$k}"] = (string) $v;
+		}
+
+		if ($class) {
+			$additionalAttributes["class"] = $class;
 		}
 
 		$arguments['parameter'] = $uri . '&' . urldecode(http_build_query( $req ));
