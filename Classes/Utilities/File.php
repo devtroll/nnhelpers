@@ -336,7 +336,9 @@ class File implements SingletonInterface {
 		if (strpos($file, sys_get_temp_dir()) !== false) {
 			return $file;
 		}
-		
+
+		$file = $this->stripBaseUrl( $file );
+
 		// Prüfen, ob ein Symlink im Spiel ist
 		if ($resolveSymLinks && is_link(dirname($file))) {
 			$link = readlink(dirname($file));
@@ -721,12 +723,29 @@ class File implements SingletonInterface {
 	 */
 	public function stripPathSite( $file, $prefix = false ) {
 		$pathSite = \nn\t3::Environment()->getPathSite();
+
 		$file = str_replace($pathSite, '', $file);
 		if ($prefix === true) {
 			$file = $pathSite . $file;
 		} else if ($prefix !== false) {
 			$file = $prefix . $file;
 		}
+		return $file;
+	}
+
+	/**
+	 * Entfernt die URL, falls sie der aktuellen Domain entspricht
+	 * 
+	 * Beispiel:
+	 * ```
+	 * \nn\t3::File()->stripBaseUrl('https://www.my-web.de/fileadmin/test.jpg'); 	==> fileadmin/test.jpg
+	 * \nn\t3::File()->stripBaseUrl('https://www.other-web.de/example.jpg'); 		==> https://www.other-web.de/example.jpg
+	 * ```
+	 * @return string
+	 */
+	public function stripBaseUrl( $file ) {
+		$baseUrl = \nn\t3::Environment()->getBaseURL();
+		$file = str_replace($baseUrl, '', $file);
 		return $file;
 	}
 	
