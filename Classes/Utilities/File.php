@@ -20,7 +20,7 @@ class File implements SingletonInterface {
    
 
 	static $TYPES = [
-		'image'		=> ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tif', 'tiff', 'heic', 'webp', 'svg', 'eps', 'raw'],
+		'image'		=> ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tif', 'tiff', 'heic', 'webp', 'svg', 'eps', 'raw', 'avif'],
 		'video'		=> ['mp4', 'webm', 'mov', 'avi'],
 		'audio'		=> ['mp3', 'aiff'],
 		'document'	=> ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'ai', 'indd', 'txt', 'zip', 'tar'],
@@ -572,6 +572,7 @@ class File implements SingletonInterface {
 	public function suffix ( $filename = null ) {
 		if (!$filename) return false;
 		$suffix = strtolower(pathinfo( $filename, PATHINFO_EXTENSION ));
+		$suffix = preg_replace('/\?.*/', '', $suffix);
 		if ($suffix == 'jpeg') $suffix = 'jpg';
 		return $suffix;
 	}

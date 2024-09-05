@@ -9,14 +9,15 @@ use TYPO3\CMS\Core\SingletonInterface;
  */
 class Video implements SingletonInterface {
    
-	static $VIDEO_PREGS = array(
-		'youtube'	=> array(
-			array( 1 => '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i') 
-		),
-		'vimeo'		=> array(
-			array( 2 => '/vimeo\.com\/(video\/)*([0-9]+)/i')
-		)
-	);
+	static $VIDEO_PREGS = [
+		'youtube' => [
+			[1 => '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i']
+		],
+		'vimeo' => [
+			[2 => '/vimeo\.com\/(video\/)*([0-9]+)/i'],
+			[1 => '/(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:channels\/[\w]+\/|groups\/[\w]+\/videos\/|album\/\d+\/video\/|video\/|)(\d+)/i'],
+		]
+	];
 
 	/**
 	 * Prüft, ob es sich bei der URL um ein externes Video auf YouTube oder Vimeo handelt.
