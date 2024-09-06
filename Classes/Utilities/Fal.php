@@ -118,7 +118,7 @@ class Fal implements SingletonInterface {
 		}
 
 		$filePath = $itemData['publicUrl'];
-
+		
 		if (!$filePath || !\nn\t3::File()->exists($filePath)) {
 			\nn\t3::Exception('\nn\t3::Fal()->attach() :: File not found.');
 		}
@@ -343,7 +343,11 @@ class Fal implements SingletonInterface {
 	 */
 	public function createFalFile ( $storageConfig, $srcFile, $keepSrcFile = false, $forceCreateNew = false ) {
 		
+		$fileHelper = \nn\t3::File();
+
 		$fileRepository = \nn\t3::injectClass( FileRepository::class );
+
+		$srcFile = $fileHelper->stripBaseUrl( $srcFile );
 
 		$isExternalMedia = strpos( $srcFile, 'http://') !== false || strpos( $srcFile, 'https://') !== false;
 
@@ -352,21 +356,21 @@ class Fal implements SingletonInterface {
 		}
 
 		// Absoluter Pfad zur Quell-Datei ('/var/www/website/uploads/bild.jpg')
-		$absSrcFile = \nn\t3::File()->absPath( $srcFile );
+		$absSrcFile = $fileHelper->absPath( $srcFile );
 
 		// Keine externe URL (YouTube...) und Datei existiert nicht? Dann abbrechen!
-		if (!$isExternalMedia && !\nn\t3::File()->exists($srcFile)) {
+		if (!$isExternalMedia && !$fileHelper->exists($srcFile)) {
 			return false;
 		}
 		
 		// Object, Storage-Model für Zielverzeichnis (z.B. Object für 'fileadmin/' wenn $storageConfig = 'fileadmin/test/was/')
-		$storage = \nn\t3::File()->getStorage($storageConfig, true);
+		$storage = $fileHelper->getStorage($storageConfig, true);
 		
 		// Object, relativer Unterordner innerhalb der Storage, (z.B. Object für 'test/was/' wenn $storageConfig = 'fileadmin/test/was/')
 		$subfolderInStorage = \nn\t3::Storage()->getFolder($storageConfig, $storage);
 
 		// String, absoluter Pfad zum Zielverzeichnis
-		$absDestFolderPath = \nn\t3::File()->absPath( $subfolderInStorage );
+		$absDestFolderPath = $fileHelper->absPath( $subfolderInStorage );
 
 		// Dateiname, ohne Pfad ('fileadmin/test/bild.jpg' => 'bild.jpg')
 		$srcFileBaseName = basename($srcFile);
@@ -394,14 +398,14 @@ class Fal implements SingletonInterface {
 
 			// Kopieren
 			if ($forceCreateNew) {
-				$success = \nn\t3::File()->copy( $absSrcFile, $absTmpName, $forceCreateNew );
+				$success = $fileHelper->copy( $absSrcFile, $absTmpName, $forceCreateNew );
 				$absTmpName = $success;
 			} else {
 				if ($keepSrcFile) {
-					$success = \nn\t3::File()->copy( $absSrcFile, $absTmpName );
+					$success = $fileHelper->copy( $absSrcFile, $absTmpName );
 					$absTmpName = $success;
 				} else {
-					$success = \nn\t3::File()->move( $absSrcFile, $absTmpName );
+					$success = $fileHelper->move( $absSrcFile, $absTmpName );
 				}
 			}
 
@@ -411,7 +415,7 @@ class Fal implements SingletonInterface {
 			$this->clearCache($absTmpName);
 
 			// String, relativer Pfad der Datei innerhalb der Storage. Ermittelt selbstständig die passende Storage ()
-			$relPathInStorage = \nn\t3::File()->getRelativePathInStorage( $absTmpName );
+			$relPathInStorage = $fileHelper->getRelativePathInStorage( $absTmpName );
 
 			// File-Object für tmp-Datei holen
 			$tmpFileObject = $storage->getFile($relPathInStorage);
@@ -425,7 +429,7 @@ class Fal implements SingletonInterface {
 		if (!$newFileObject) return false;
 
 		// Exif-Daten für Datei ermitteln
-		if ($exif = \nn\t3::File()->getExifData( $srcFile )) {
+		if ($exif = $fileHelper->getExifData( $srcFile )) {
 			\nn\t3::Db()->update('sys_file', ['exif'=>json_encode($exif)], $newFileObject->getUid());
 		}
 		

@@ -23,7 +23,7 @@ class File implements SingletonInterface {
 		'image'		=> ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tif', 'tiff', 'heic', 'webp', 'svg', 'eps', 'raw', 'avif'],
 		'video'		=> ['mp4', 'webm', 'mov', 'avi'],
 		'audio'		=> ['mp3', 'aiff'],
-		'document'	=> ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'ai', 'indd', 'txt', 'zip', 'tar'],
+		'document'	=> ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'csv', 'ai', 'indd', 'txt', 'zip', 'tar'],
 		'pdf'		=> ['pdf'],
 		'enc'		=> ['enc'],
 	];
