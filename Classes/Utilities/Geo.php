@@ -17,7 +17,7 @@ use TYPO3\CMS\Core\SingletonInterface;
  * 
  */
 class Geo implements SingletonInterface {
-   
+
 	/**
 	 * 	@var mixed
 	 */
@@ -97,7 +97,7 @@ class Geo implements SingletonInterface {
 
 		// EXT:nnaddress verwenden, falls vorhanden
 		if (\nn\t3::Environment()->extLoaded('nnaddress')) {
-			$addressService = GeneralUtility::makeInstance( \Nng\Nnaddress\Services\AddressService::class );
+			$addressService = \nn\t3::injectClass( \Nng\Nnaddress\Services\AddressService::class );
 			if ($coordinates = $addressService->getGeoCoordinatesForAddress( $address )) {
 				return $coordinates;
 			}
