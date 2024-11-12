@@ -181,6 +181,22 @@ class Environment implements SingletonInterface {
 	}
 
 	/**
+	 * Gibt `true` zurück, wenn die Seite über HTTPS aufgerufen wird.
+	 * ```
+	 * $isHttps = \nn\t3::Environment()->isHttps();
+	 * ```
+	 * @return boolean
+	 */
+	public function isHttps() {
+		return (
+			(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+			|| (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)
+			|| (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+			|| (isset($_SERVER['HTTP_VIA']) && strpos($_SERVER['HTTP_VIA'], 'HTTPS') !== false)
+		);
+	}
+
+	/**
 	 *  Gibt die baseUrl (`config.baseURL`) zurück, inkl. http(s) Protokoll z.B. https://www.webseite.de/
 	 *	```
 	 *	\nn\t3::Environment()->getBaseURL();
@@ -192,7 +208,8 @@ class Environment implements SingletonInterface {
 		$setup = \nn\t3::Settings()->getFullTyposcript();
 		if ($baseUrl = $setup['config']['baseURL'] ?? false) return $baseUrl;
 		$host = $_SERVER['HTTP_HOST'] ?? '';
-		$server = (isset($_SERVER['HTTPS']) ? 'https' : 'http') . "://{$host}/";
+
+		$server = ($this->isHttps() ? 'https' : 'http') . "://{$host}/";
 		return $server;
 	}
 
