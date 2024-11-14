@@ -1283,6 +1283,9 @@ class File implements SingletonInterface {
 				$path = $this->absPath($files[$k]);
 				$filenameForDownload = pathinfo( $path, PATHINFO_BASENAME);
 			}
+			if (!$path) {
+				die('Could not resolve absolute file path for download.');
+			}
 			\nn\t3::File()->sendDownloadHeader( $filenameForDownload );
 			readfile( $path );
 			die();	
