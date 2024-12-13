@@ -6,8 +6,8 @@ CREATE TABLE tx_nnhelpers_domain_model_entry (
 	uid int(11) NOT NULL auto_increment,
 	pid int(11) DEFAULT '0' NOT NULL,
 
-	title text DEFAULT '' NOT NULL,
-	data text DEFAULT '' NOT NULL,
+	title text,
+	data text,
 	media int(11) unsigned NOT NULL default '0',
 	categories int(11) unsigned NOT NULL default '0',
 	
