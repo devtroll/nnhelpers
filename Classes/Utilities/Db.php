@@ -822,6 +822,9 @@ class Db implements SingletonInterface
 	 * 
 	 * // oder besser gleich prepared statements verwenden:
 	 * $rows = \nn\t3::Db()->statement( 'SELECT * FROM tt_news WHERE bodytext LIKE :str', ['str'=>"%${keyword}%"] );
+	 * 
+	 * // Typen können übergeben werden (bei Array wird das automatisch ermittelt)
+	 * $rows = \nn\t3::Db()->statement( 'SELECT * FROM tt_news WHERE uid IN (:uids)', ['uids'=>[1,2,3]], ['uids'=>Connection::PARAM_INT_ARRAY] );
 	 * ```
 	 * 
 	 * Bei einem `SELECT` Statement werden die Zeilen aus der Datenbank als Array zurückgegeben.
@@ -829,18 +832,28 @@ class Db implements SingletonInterface
 	 * 
 	 * @param string $statement
 	 * @param array $params
+	 * @param array $types
 	 * @return mixed
 	 */
-	public function statement( $statement = '', $params = [] ) 
+	public function statement( $statement = '', $params = [], $types = [] ) 
 	{
 		$connection = $this->getConnection();
 
 		// exec / fetchAll --> @siehe https://bit.ly/3ltPF0S
 
+		// set types automatically if params were used
+		foreach ($params as $key=>$val) {
+			if (isset($types[$key]) || !is_array($val)) {
+				continue;
+			}
+			$allNumeric = count(array_filter($val, 'is_numeric')) === count($val);
+			$types[$key] = $allNumeric ? Connection::PARAM_INT_ARRAY : Connection::PARAM_STR_ARRAY;
+		}
+
 		if (stripos($statement, 'select ') !== false) {
-			$result = $connection->fetchAllAssociative( $statement, $params );
+			$result = $connection->fetchAllAssociative( $statement, $params, $types );
 		} else {
-			$result = $connection->exec( $statement, $params );
+			$result = $connection->exec( $statement, $params, $types );
 		}
 
 		return $result;
