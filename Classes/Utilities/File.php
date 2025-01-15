@@ -1110,7 +1110,7 @@ class File implements SingletonInterface {
 		if ($image) {
 
             $cropVariantCollection = CropVariantCollection::create((string)$cropString );
-            $cropVariant = $processing['cropVariant'] ?: 'default';
+            $cropVariant = $processing['cropVariant'] ?? 'default';
 			$cropArea = $cropVariantCollection->getCropArea($cropVariant);
 			$processing['crop'] = $cropArea->isEmpty() ? null : $cropArea->makeAbsoluteBasedOnFile($image);
 
