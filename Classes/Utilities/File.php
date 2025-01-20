@@ -329,6 +329,12 @@ class File implements SingletonInterface {
 			return $file->getForLocalProcessing(false);
 		}
 
+		if (\nn\t3::Obj()->isFile($file)) {
+			$path = $file->getIdentifier();
+			$folder = $file->getStorage()->getConfiguration()['basePath'];
+			return rtrim($folder, '/') . $path;
+		}
+
 		if (!is_string($file)) {
 			$file = $this->getPublicUrl( $file );
 		}
