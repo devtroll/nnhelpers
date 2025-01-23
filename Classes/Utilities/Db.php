@@ -810,11 +810,18 @@ class Db implements SingletonInterface
 
 		$queryBuilder->delete($table);
 		foreach ($constraint as $k=>$v) {
-			$queryBuilder->andWhere(
-				$queryBuilder->expr()->eq( $k, $queryBuilder->createNamedParameter($v))
-			);
+			if (is_array($v)) {
+				$v = $this->quote( $v );
+				$queryBuilder->andWhere(
+					$queryBuilder->expr()->in( $k, $queryBuilder->createNamedParameter($v, Connection::PARAM_STR_ARRAY) )
+				);
+			} else {
+				$queryBuilder->andWhere(
+					$queryBuilder->expr()->eq( $k, $queryBuilder->createNamedParameter($v))
+				);
+			}
 		}
-
+		
 		return $queryBuilder->executeStatement();
 	}
 
