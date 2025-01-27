@@ -233,11 +233,14 @@ class Request implements SingletonInterface {
 	 *  
 	 * @param string $url
 	 * @param array $data
-	 * @param array $headers
+	 * @param array|null $headers
 	 * @return array
 	 */
-   	public function JSON( $url = '', $data = [], $headers = [] ) 
+   	public function JSON( $url = '', $data = [], $headers = null ) 
 	{
+		if ($headers === null) {
+			$headers = ['Content-Type' => 'application/json'];
+		}
 		return $this->POST( $url, json_encode($data), $headers );
    	}
 
