@@ -12,6 +12,7 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Imaging\ImageManipulation\CropVariantCollection;
 use TYPO3\CMS\Frontend\Utility\CompressionUtility;
 
+
 /**
  * Methoden rund um das Dateisystem: 
  * Lesen, Schreiben, Kopieren, Verschieben und Bereinigen von Dateien.
@@ -286,6 +287,12 @@ class File implements SingletonInterface {
 	 * @return string
 	 */
 	public function absUrl( $file = null ) {
+
+		if (substr($file, 0, 4) == 'EXT:') {
+			$absoluteFilePath = GeneralUtility::getFileAbsFileName($file);
+			$file = PathUtility::getAbsoluteWebPath($absoluteFilePath);
+		}
+
 		$baseUrl = \nn\t3::Environment()->getBaseURL();
 		$file = $this->stripPathSite( $file );
 		$file = str_replace( $baseUrl, '', $file );
