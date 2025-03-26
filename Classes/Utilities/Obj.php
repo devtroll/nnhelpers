@@ -929,16 +929,20 @@ class Obj implements SingletonInterface {
 	 * @param array $fieldsToIgnore	    Liste der Properties, die ignoriert werden können. Leer = keine
 	 * @param array $fieldsToCompare	Liste der Properties, die verglichen werden sollen. Leer = alle
 	 * @param boolean $options  		Optionen / Toleranzen beim Vergleichen
+	 * 									`includeMissing` 	=> auch fehlende Properties in $objB hinzufügen
 	 * 									`ignoreWhitespaces` => Leerzeichen ignorieren
 	 * 									`ignoreEncoding`	=> UTF8 / ISO-Encoding ignorieren
 	 * 									`ignoreTags`		=> HTML-Tags ignorieren
+	 * 									`depth`				=> Tiefe, die verglichen werden soll
 	 * 
 	 * @return array
 	 */	
-	public function diff( $objA, $objB, $fieldsToIgnore = [], $fieldsToCompare = [], $options = [] ) {
+	public function diff( $objA, $objB, $fieldsToIgnore = [], $fieldsToCompare = [], $options = [], $path = '', &$diff = [] ) {
 
-		$arrA = $this->toArray( $objA );
-		$arrB = $this->toArray( $objB );
+		$arrA = $this->toArray( $objA, $options['depth'] ?? 3 );
+		$arrB = $this->toArray( $objB, $options['depth'] ?? 3 );
+
+		$includeMissing = $options['includeMissing'] ?? false;
 
 		// Keine Felder zum Vergleich angegeben? Dann alle nehmen
 		if (!$fieldsToCompare) {
@@ -948,27 +952,20 @@ class Obj implements SingletonInterface {
 		// Felder, die ignoriert werden sollen abziehen.
 		$fieldsToCheck = array_diff( $fieldsToCompare, $fieldsToIgnore );
 
-		$diff = [];
 		foreach ($fieldsToCheck as $k=>$fieldName) {
+
+			$deep = $path . ($path === '' ? '' : '.') . "{$fieldName}";
 
 			$hasDiff = false;
 			$valA = $arrA[$fieldName];
 			$valB = $arrB[$fieldName] ?? null;
 
 			// Property existiert nur in objA? Dann ignorieren
-			if (!isset($arrB[$fieldName])) continue;
+			if (!$includeMissing && !isset($arrB[$fieldName])) continue;
 
 			if (is_array($valA)) {
-
-				// Vergleich eines Arrays
-				$isStorage = is_array(\nn\t3::Arrays($valA)->first()) || is_array(\nn\t3::Arrays($valB)->first());
-				if ($isStorage && count($valA) != count($valB)) {
-					$hasDiff = true;
-				}
-
-				if ($arrDiff = $this->diff( $valA, $valB )) {
-					$hasDiff = true;
-				}
+		
+				$this->diff($valA, $valB, [], [], $options, $deep, $diff);
 
 			} else {
 
@@ -997,7 +994,7 @@ class Obj implements SingletonInterface {
 
 			// Gab es einen Unterschied? Dann diff-Array befüllen
 			if ($hasDiff) {
-				$diff[$fieldName] = [
+				$diff[$deep] = [
 					'from'	=> $valA, 
 					'to'	=> $valB, 
 				];
