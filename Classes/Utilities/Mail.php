@@ -35,6 +35,7 @@ class Mail implements SingletonInterface {
 	 *		'attachments'	=> [...],
 	 *		'emogrify'		=> CSS-Stile in Inline-Styles umwandeln (default: `true`)
 	 *		'absPrefix'		=> Relative Pfade in absolute umwandeln (default: `true`)
+	 *		'headers'		=> ['List-Unsubscribe' => '<mailto:unsubscribe@99grad.de>, https://www.unsubscribe.com'],
 	 *	]);
 	 *	```
 	 * 	Bilder einbetten mit 	`<img data-embed="1" src="..." />`
@@ -137,6 +138,14 @@ class Mail implements SingletonInterface {
 		$returnPath = $params['returnPath_email'] ?? \TYPO3\CMS\Core\Utility\MailUtility::getSystemFromAddress();
 		if (strpos($returnPath, 'no-reply') === false) {
 			$mail->setReturnPath( $returnPath );
+		}
+
+		// zsätzliche Header?
+		if ($headers = $params['headers'] ?? false) {
+			$mailHeaders = $mail->getHeaders();
+			foreach ($headers as $k=>$v) {
+				$mailHeaders->addTextHeader($k, $v);
+			}
 		}
 
 		$sent = $mail->send();
