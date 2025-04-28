@@ -898,9 +898,23 @@ class Db implements SingletonInterface
 
 		// set types automatically if params were used
 		foreach ($params as $key=>$val) {
-			if (isset($types[$key]) || !is_array($val)) {
+
+			// was type defined in arguments? then skip
+			if (isset($types[$key])) {
 				continue;
 			}
+
+			// type not defined - and not array? then add type
+			if (!is_array($val)) {
+				if (is_numeric($val)) {
+					$types[$key] = Connection::PARAM_INT;
+				} else {
+					$types[$key] = Connection::PARAM_STR;
+				}
+				continue;
+			}
+
+			// type not defined and array?
 			$allNumeric = count(array_filter($val, 'is_numeric')) === count($val);
 			$types[$key] = $allNumeric ? Connection::PARAM_INT_ARRAY : Connection::PARAM_STR_ARRAY;
 		}
