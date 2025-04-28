@@ -35,7 +35,7 @@ class Mail implements SingletonInterface {
 	 *		'attachments'	=> [...],
 	 *		'emogrify'		=> CSS-Stile in Inline-Styles umwandeln (default: `true`)
 	 *		'absPrefix'		=> Relative Pfade in absolute umwandeln (default: `true`)
-	 *		'headers'		=> ['List-Unsubscribe' => '<mailto:unsubscribe@99grad.de>, https://www.unsubscribe.com'],
+	 *		'headers'		=> ['List-Unsubscribe' => '<mailto:unsubscribe@99grad.de>, <https://www.unsubscribe.com>'],
 	 *	]);
 	 *	```
 	 * 	Bilder einbetten mit 	`<img data-embed="1" src="..." />`
