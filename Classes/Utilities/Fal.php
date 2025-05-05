@@ -938,7 +938,7 @@ class Fal implements SingletonInterface {
 					'table'         => $modelTableName,
 					'field'         => $fieldName,
 				];
-				$value = $this->fromFile( $falParams );die('OK');
+				$value = $this->fromFile( $falParams );
 			}
 
 			// Sollte etwas schief gegangen sein, ist $value == FALSE
