@@ -88,9 +88,8 @@ class Template implements SingletonInterface {
 	{	
 		$view = \nn\t3::injectClass(StandaloneView::class);
 
-		// @todo: Prüfen, of das geht?
 		if (!$request) {
-			//$request = $GLOBALS['TYPO3_REQUEST'] ?? false;
+			$request = \nn\t3::Environment()->getRequest();
 		}
 		if ($request) {
 			$view->setRequest( $request );
