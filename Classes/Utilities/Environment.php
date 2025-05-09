@@ -27,6 +27,39 @@ class Environment implements SingletonInterface {
 	public $_isFrontend = null;
 
 	/**
+	 * @var 
+	 */
+	public $TYPO3_REQUEST = null;
+
+	/**
+	 * Setzt den aktuellen Request.
+	 * Wird in der `RequestParser`-MiddleWare gesetzt
+	 * ```
+	 * \nn\t3::Environment()->setRequest( $request );
+	 * ```
+	 * @param \TYPO3\CMS\Core\Http\ServerRequest
+	 * @return self
+	 */
+	public function setRequest(&$request) 
+	{
+		return $this->TYPO3_REQUEST = $request;
+	}
+
+	/**
+	 * Holt den aktuellen Request.
+	 * Workaround für Sonderfälle – und den Fall, dass das Core-Team
+	 * diese Option nicht in Zukunft selbst implementiert.
+	 * ```
+	 * $request = \nn\t3::Environment()->getRequest();
+	 * ```
+	 * @return \TYPO3\CMS\Core\Http\ServerRequest
+	 */
+	public function getRequest() 
+	{
+		return $GLOBALS['TYPO3_REQUEST'] ?? null ?: $this->TYPO3_REQUEST;
+	}
+
+	/**
 	 * Das aktuelle `Site` Object holen.
 	 * Über dieses Object kann z.B. ab TYPO3 9 auf die Konfiguration aus der site YAML-Datei zugegriffen werden.
 	 *  
@@ -46,11 +79,10 @@ class Environment implements SingletonInterface {
 	 */
 	public function getSite ( $request = null ) {
 
-		$request = $request ?: $GLOBALS['TYPO3_REQUEST'] ?? false;
-
+		$request = $this->getRequest();
 		if (!$request) return [];
-		$site = $request->getAttribute('site');
 
+		$site = $request->getAttribute('site');
 		if (!$site || is_a($site, \TYPO3\CMS\Core\Site\Entity\NullSite::class)) {
 			$matcher = GeneralUtility::makeInstance( SiteMatcher::class );
 			$routeResult = $matcher->matchRequest($request);
@@ -80,8 +112,9 @@ class Environment implements SingletonInterface {
 	 * 	@return string
 	 */
 	public function getLanguageKey () {
-		if ($GLOBALS['TYPO3_REQUEST'] instanceof ServerRequestInterface) {
-			$data = $GLOBALS['TYPO3_REQUEST']->getAttribute('language', null);
+		$request = $this->getRequest();
+		if ($request instanceof ServerRequestInterface) {
+			$data = $request->getAttribute('language', null);
 			return $data->getTwoLetterIsoCode();
 		}
 		return '';
@@ -390,11 +423,12 @@ class Environment implements SingletonInterface {
 	 * 	@return bool
 	 */
 	public function isFrontend () {
-		if ($this->_isFrontend !== null) return $this->_isFrontend;
-		if (($GLOBALS['TYPO3_REQUEST'] ?? null) instanceof ServerRequestInterface
-    		&& ApplicationType::fromRequest($GLOBALS['TYPO3_REQUEST'])->isFrontend()
-		) {
-			return $this->_isFrontend = true;
+		if ($this->_isFrontend !== null) {
+			return $this->_isFrontend;
+		}
+		$request = $this->getRequest();
+		if ($request instanceof ServerRequestInterface) {
+			return $this->_isFrontend = ApplicationType::fromRequest($request)->isFrontend();
 		}
 		return $this->_isFrontend = false;
 	}
