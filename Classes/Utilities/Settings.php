@@ -162,7 +162,7 @@ class Settings extends \Nng\Nnhelpers\Singleton {
 		\nn\t3::Tsfe()->softDisableCache();
 
 		try {
-			if ($request = $GLOBALS['TYPO3_REQUEST'] ?? false) {
+			if ($request = \nn\t3::Environment()->getRequest()) {
 				if ($ts = $request->getAttribute('frontend.typoscript')) {
 					$setup = $ts->getSetupArray();
 				}
