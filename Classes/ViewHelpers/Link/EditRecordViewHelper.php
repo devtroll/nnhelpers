@@ -34,18 +34,18 @@ class EditRecordViewHelper extends AbstractViewHelper {
 		$this->registerArgument('returnUrl', 'string', 'Nach Schließen des Editors: Zu welcher URL zurückkehren?', false);
 		$this->registerArgument('uid', 'string', 'UID in Tabelle', true);
 		$this->registerArgument('data', 'array', 'additional data attributes', false, []);
-
         $this->registerArgument('additionalParams', 'string', 'stdWrap.typolink additionalParams', false, '');
 		$this->registerArgument('additionalAttributes', 'array', 'Additional tag attributes to be added directly to the resulting HTML tag', false, []);
         $this->registerArgument('language', 'string', 'link to a specific language - defaults to the current language, use a language ID or "current" to enforce a specific language', false);
         $this->registerArgument('addQueryString', 'string', 'If set, the current query parameters will be kept in the URL. If set to "untrusted", then ALL query parameters will be added. Be aware, that this might lead to problems when the generated link is cached.', false, false);
         $this->registerArgument('addQueryStringExclude', 'string', 'Define parameters to be excluded from the query string (only active if addQueryString is set)', false, '');
         $this->registerArgument('absolute', 'bool', 'Ensure the resulting URL is an absolute URL', false, false);
+        $this->registerArgument('class', 'string', 'CSS-Klassen', false, '');
    }
 
 	public static function renderStatic( array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext ) 
 	{
-		$args = ['table', 'uid', 'returnUrl', 'data'];
+		$args = ['table', 'uid', 'returnUrl', 'data', 'class'];
 
 		foreach ($args as $arg) {
 			$$arg = $arguments[$arg] ?? '';
@@ -67,6 +67,7 @@ class EditRecordViewHelper extends AbstractViewHelper {
 		]);
 		
 		$arguments['parameter'] = $uri;
+		$arguments['class'] = $class;
 
 		return TypolinkViewHelper::renderStatic( $arguments, $renderChildrenClosure, $renderingContext );
 	}

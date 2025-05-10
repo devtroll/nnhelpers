@@ -26,11 +26,12 @@ class ModifyRecordViewHelper extends AbstractViewHelper {
 		$this->registerArgument('uid', 'string', 'UID in Tabelle', true);
 		$this->registerArgument('update', 'array', 'Felder und Werte, die geupdated werden sollen', false, []);
 		$this->registerArgument('data', 'array', 'Data-Attribut', false, []);
-   }
+		$this->registerArgument('class', 'string', 'CSS-Klassen', false, '');
+	}
 
 	public static function renderStatic( array $arguments, \Closure $renderChildrenClosure, RenderingContextInterface $renderingContext ) 
 	{
-		$args = ['table', 'uid', 'data', 'update'];
+		$args = ['table', 'uid', 'data', 'update', 'class'];
 		foreach ($args as $arg) {
 			$$arg = $arguments[$arg] ?? '';
 		}
@@ -53,6 +54,7 @@ class ModifyRecordViewHelper extends AbstractViewHelper {
 
 		$arguments['parameter'] = $uri . '&' . urldecode(http_build_query( $req ));
 		$arguments['additionalAttributes'] = array_merge( $arguments['additionalAttributes'] ?? [], $dataAttr );
+		$arguments['class'] = $class;
 		
 		return TypolinkViewHelper::renderStatic( $arguments, $renderChildrenClosure, $renderingContext );
 	}
