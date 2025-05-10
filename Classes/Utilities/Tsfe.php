@@ -76,7 +76,7 @@ class Tsfe implements SingletonInterface {
 	{
 		if (!isset($GLOBALS['TSFE'])) $this->init();
 
-		if ($request = $request ?: $GLOBALS['TYPO3_REQUEST'] ?? false) {
+		if ($request = $request ?: \nn\t3::Environment()->getRequest()) {
 			if ($cObj = $request->getAttribute('currentContentObject')) {
 				return $cObj;
 			}
@@ -102,7 +102,16 @@ class Tsfe implements SingletonInterface {
 	 */
 	public function cObjData( $request = null, $var = null ) 
 	{	
-		if (!$request || is_string($request)) {
+		if (is_string($request)) {
+			$var = $request;
+			$request = null;
+		}
+
+		if (!$request) {
+			$request = \nn\t3::Environment()->getRequest();
+		}
+
+		if (!$request) {
 			\nn\t3::Exception('
 				\nn\t3::Tsfe()->cObjData() needs a $request as first parameter. 
 				In a Controller-Context use \nn\t3::Tsfe()->cObjData( $this->request ). 
