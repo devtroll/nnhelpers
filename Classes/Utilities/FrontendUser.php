@@ -96,8 +96,8 @@ class FrontendUser implements SingletonInterface
 		if (!$this->isLoggedIn()) return [];
 
 		// Wenn wir ein Frontend haben, sind die fe_user-Daten global und vollständig im TSFE gespeichert
-		if (\nn\t3::t3Version() < 9 || (($GLOBALS['TSFE'] ?? false) && $GLOBALS['TSFE']->fe_user)) {
-			return $GLOBALS['TSFE']->fe_user->user ?? [];
+		if (($GLOBALS['TSFE'] ?? false) && $GLOBALS['TSFE']->fe_user && $GLOBALS['TSFE']->fe_user->user['username']) {
+			return $GLOBALS['TSFE']->fe_user->user;
 		}
 
 		// Ohne Frontend könnten wir uns z.B. in einer Middleware befinden. Nach AUTH sind die Daten evtl im Aspect.
