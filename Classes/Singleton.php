@@ -23,7 +23,7 @@ abstract class Singleton {
 
 	private static $instances = [];
 
-	private function __construct() {}
+	public function __construct() {}
 
 	public static function makeInstance( $args = null ) {
 	   	$className = get_called_class();
